@@ -5,6 +5,7 @@
 \usepackage{graphicx}
 \usepackage{caption}
 \usepackage{subcaption}
+\usepackage{url}
 \renewcommand{\sfdefault}{kurier}
 
 \setlength{\oddsidemargin}{0.25 in}
@@ -274,6 +275,17 @@ $cov(X,Y)=E[(X-E(X))(Y-E(Y))] = E(XY^T) - E(X)E(Y^T)$
 \end{center}
 
 If the covariance is positive this implies that X tends to increase at the same time as Y. If the covariance is negative then this implies that X tends to decrease as Y increases.If changes in X and Y have a random relationship, then the covariance will be close to zero. If two variables have a covariance of zero they are called uncorrelated. If two variables are independent they will be uncorrelated. However, two variables which are uncorrelated are not always independent.
+
+\section{Additional Resources}
+
+There are some additional resources to which you can refer. Chapter 2 in \cite{thrun2005probabilistic} provided basic probabilistic concepts that are frequently used in robotics, the formal model of robot interaction, introduction to \textit{Bayes filters} and implementing issues associated with that. 
+
+If you want to dive deeper into \textit{Bayes filters}, \cite{sarkka2013bayesian} is a comprehensive book on Bayesian filtering and smoothing and applications of \textit{Bayes filters} such as \textit{Kalman filters} (including extended and unscented \textit{Kalman filters}), \textit{Gaussian filters} and \textit{Partical filters}. As you know, Bayes recursive filter is not a practical algorithm, which means it cannot be implemented on a computer. Therefore, it is important to understand those implementations using the principle of \textit{Bayes filters}. 
+
+If you are interested in the original paper on \textit{Kalman filters} by R.E.Kalman, you can refer to \cite{kalman1960new}. This famous paper described a recursive solution to discrete filtering problem. With the advance of computer and robotics, this paper inspired a lot of researches and applications. 
+
+There is a great online article \cite{HowKF} which provides an intuitive explanation of what is a \textit{Kalman filters} and how it works. This article approaches \textit{Kalman filters} in a slightly different way (more from a linear algebra point of view). Nevertheless, it will help you build insightful intuitions of \textit{Kalman filters} and is very interesting to read through.
+
 
 \bibliographystyle{ieee}
 \bibliography{egbib}
