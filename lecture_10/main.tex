@@ -276,6 +276,52 @@ $cov(X,Y)=E[(X-E(X))(Y-E(Y))] = E(XY^T) - E(X)E(Y^T)$
 
 If the covariance is positive this implies that X tends to increase at the same time as Y. If the covariance is negative then this implies that X tends to decrease as Y increases.If changes in X and Y have a random relationship, then the covariance will be close to zero. If two variables have a covariance of zero they are called uncorrelated. If two variables are independent they will be uncorrelated. However, two variables which are uncorrelated are not always independent.
 
+\section{Model for robot-environment interaction\cite{Thrun}}
+There are two fundamental types of robot-environment interaction:
+\begin{enumerate}
+  \item The robot can acquire information about its environment using its sensors.
+
+  \item The robot can also influence its environment through its actuators.
+\end{enumerate}
+\subsection{State}
+We define the state($x$) as the collection of all aspects
+of the robot and its environment that can impact the future.$x_{t}$ denote the state at time t. In addition, we define notation: $x_{t_1:t_2} := x_{t_1},x_{t_1+1},...,x_{t_2}$. 
+State variables include:
+\begin{itemize}
+  \item Robot	pose	(e.g.,	robot	location	and	orientation relative to a
+global coordinate frame)
+  \item Robot	velocity
+  \item Location	and	features	of	surrounding	objects	in	the	environment,	etc
+\end{itemize}
+
+A state $x_{t}$ will be called complete if it is the best predictor of the future. The future may be stochastic, but no variables prior to $x_{t}$ may influence the stochastic evolution of future states, unless this dependence is mediated through the state $x_{t}$. Temporal processes that meet these conditions are only known as Markov chains(Markoc property).
+
+\subsection{Measurement and control data}
+Environment measurement data provides information about a momentary state of the environment. The measurement data at time $t$ will be denoted $z_{t}$.We define notation: $z_{t_1:t_2} := z_{t_1},z_{t_1+1},...,z_{t_2}$, denotes the set of all measurements acquired from time $t_1$ to time $t_2$, for
+$t_1 \leq t_2$.\par
+
+Control data carry information about the change of state in the environment.In mobile robotics, a typical example of control data is the velocity
+of a robot.Control data will be denoted $u_t$. The variable $u_t$ will always correspond to
+the change of state in the time interval (t-1;t].We define notation: $u_{t_1:t_2} := u_{t_1},u_{t_1+1},...,u_{t_2}$, denotes the sequences of control data from time $t_1$ to time $t_2$, for
+$t_1 \leq t_2$.\par
+
+ Environment perception provides information about the environment’s state, hence it tends to increase the robot’s knowledge. Motion, on  the other hand, tends to induce a loss of knowledge due to the inherent noise in robot actuation and the stochasticity of robot environments.
+ 
+ \subsection{State equation}
+ The evolution of state and measurements is governed by probabilistic laws. the probabilistic law characterizing
+the evolution of state might be given by a probability distribution
+of the following form: $p(x_t \mid x_{1:t-1}, z_{1:t-1}, u_{1:t})$. Notice that through no particular
+motivation we assume here that the robot executes a control action $u_1$ first, and then takes a measurement $z_1$.
+
+ If the state x is complete then it is a
+sufficient summary of all that happened in previous time steps. In particular,$x_{t-1}$ is a sufficient statistic of all previous controls and measurements up to this point in time, that is, $u_{1:t-1}$ and $z_{1:t-1}$. From all the variables in the
+expression above, only the control $u_t$ matters if we know the state $x_{t-1}$. That is :
+
+\begin{center}
+$p(x_t \mid x_{1:t-1}, z_{1:t-1}, u_{1:t}) = p(x_t \mid x_{t-1},u_t)$
+\end{center}
+
+
 \section{Additional Resources}
 
 There are some additional resources to which you can refer. Chapter 2 in \cite{thrun2005probabilistic} provided basic probabilistic concepts that are frequently used in robotics, the formal model of robot interaction, introduction to \textit{Bayes filters} and implementing issues associated with that. 
