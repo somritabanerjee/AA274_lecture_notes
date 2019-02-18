@@ -321,6 +321,47 @@ expression above, only the control $u_t$ matters if we know the state $x_{t-1}$.
 $p(x_t \mid x_{1:t-1}, z_{1:t-1}, u_{1:t}) = p(x_t \mid x_{t-1},u_t)$
 \end{center}
 
+\subsection{Measurement equation}
+The probability of getting a measurement $z_t$ is also given by a probabilistic law. Again, if we assume that the state $x$ is complete, then we can say that state $x_t$ already encodes the effect of all previous states $x_{0:t-1}$, previous measurements, $z_{1:t-1}$, and previous controls $u_{1:t}$. This allows us to arrive at the equation:  
+
+\begin{center}
+$p(z_t \mid x_{0:t},z_{1:t-1},u_{1:t})=p(z_t\mid x_t)$
+\end{center}
+
+\subsection{Overall stochastic model}
+It is important to keep the order of occurence of different events in the model consistent. In our notation, we assume that the control effort $u_t$ is determined after taking into account the state $x_{t-1}$ and measurement $z_{t-1}$. The control effort $u_t$ causes the robot to transition to a new state $x_t$ where a new measurement $z_t$ is taken, which in turns allows the determination of a new control effort $u_{t+1}$. This network model is a stochastic model known as a Markov process because the new state $x_t$ only depends on the previous state $x_{t-1}$ and the previous control $u_t$. In addition, since we cannot directly observe the current state, but instead estimate it through measurements, this model is further classified as a hidden Markov model. 
+
+\subsection{Belief distribution}
+We can encode our internal knowledge of the state in a belief distribution, which is a probability distribution that has a value for each possible hypothesis of the true state. Formally, our belief distribution at a particular state is the probability of being at that state given all the measurements and control efforts we've seen so far. 
+
+\begin{center}
+$bel(x_t):=p(x_t\mid z_{1:t},u_{1:t})$
+\end{center} 
+
+Note that this probability distribution can be unimodal or multimodal. A useful tool to calculate our belief distribution is an intermediate belief distribution known as the prediction distribution. The prediction distribution is the probability of being at a state given all the past measurements (except the one we took at this new state) and the previous control efforts. 
+
+\begin{center}
+$\overline{bel}(x_t):=p(x_t\mid z_{1:t-1},u_{1:t})$
+\end{center} 
+
+Therefore, the first step to calculate our final belief distribution is to calculate the prediction distribution. Next, we add the latest measurement to sharpen the belief. This second step of calculating the true belief from the prediction belief is called the correction step or the measurement update.  This leads us to the Bayes filter algorithm. 
+
+\section{Bayes' filter algorithm}
+The Bayes' filter algorithm is the most general algorithm for calculating state beliefs. The key assumption made in this algorithm is that the state $x_t$ is complete, i.e. only depends on the previous state and control effort, $x_{t-1}$ and $u_t$. Note that the Bayes' filter algorithm is the most general algorithm but is not necessarily achievable. The algorithm assumes a continuous state space, continuous time, and requires that we be able to compute all the beliefs in an arbitrarily dimensionally large space. Though not practical, the Bayes' filter algorithm is still a great starting point to derive more practical algorithms that can be used in different scenarios. 
+
+\subsection{Overview of algorithm}
+This is a recursive algorithm. It is initialized with some guess of the initial state, i.e. an initial belief $bel(x_0)$. This can be a uniform distribution of density or point masses if we have no prior information. \\
+The first step is to carry out the prediction step to compute $\overline{bel}(x_t)$ using the previous control effort $u_t$ used to get to state $x_t$. This is simply the integration over all possible previous states $x_{t-1}$, of the product of the prior belief $bel{x_{t-1}}$ (where we think we were before) and the transition model given that we know our last control effort $p(x_t \mid u_t, x_{t-1})$. This prediction belief is an encoding of how likely it is that we're now at $x_t$.
+\begin{center}
+$\overline{bel}(x_t)= \int p(x_t \mid u_t, x_{t-1}) bel({x_{t-1}}) dx_{t-1}$
+\end{center}
+The second step is the measurement update where the most recent measurement is incorporated to sharpen our belief. This involves taking our prediction belief and multiplying it by the probability of seeing the measurement that we did $z_t$ if we were actually at our predicted state $x_t$. This allows us to correct our prediction belief and find our true belief. 
+\begin{center}
+$bel(x_t):=\eta p(z_t\mid x_t) \overline{bel}(x_t) $
+\end{center} 
+After these two steps, a control effort $u_{t+1}$ is taken, we transition to a new state $x_{t+1}$, and the process of prediction and measurement update is repeated. This is what makes the Bayes' filter algorithm a recursive algorithm. 
+
+\subsection{Derivations}
 
 \section{Additional Resources}
 
@@ -337,7 +378,7 @@ There is a great online article \cite{HowKF} which provides an intuitive explana
 \bibliography{egbib}
 
 \subsubsection*{Contributors}
-Winter 2019: [Your Names Here]
+Winter 2019: Akshay Gupta, Ian Vorbach, Orien Zeng, Somrita Banerjee, Zhengyu Chen
 \\
 Winter 2018: Junjie Ke, Ryan Wong, Amine Elhafsi, Samuel Sowell, Peter Zachares
 \end{document}
