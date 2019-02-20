@@ -6,6 +6,8 @@
 \usepackage{caption}
 \usepackage{subcaption}
 \usepackage{url}
+\usepackage[]{algorithm2e}
+\usepackage{amstext,amsmath,amssymb,epsfig,fancyhdr}
 \renewcommand{\sfdefault}{kurier}
 
 \setlength{\oddsidemargin}{0.25 in}
@@ -276,7 +278,7 @@ $cov(X,Y)=E[(X-E(X))(Y-E(Y))] = E(XY^T) - E(X)E(Y^T)$
 
 If the covariance is positive this implies that X tends to increase at the same time as Y. If the covariance is negative then this implies that X tends to decrease as Y increases.If changes in X and Y have a random relationship, then the covariance will be close to zero. If two variables have a covariance of zero they are called uncorrelated. If two variables are independent they will be uncorrelated. However, two variables which are uncorrelated are not always independent.
 
-\section{Model for robot-environment interaction\cite{Thrun}}
+\section{Model for robot-environment interaction\cite{thrun2005probabilistic}}
 There are two fundamental types of robot-environment interaction:
 \begin{enumerate}
   \item The robot can acquire information about its environment using its sensors.
@@ -329,7 +331,15 @@ $p(z_t \mid x_{0:t},z_{1:t-1},u_{1:t})=p(z_t\mid x_t)$
 \end{center}
 
 \subsection{Overall stochastic model}
-It is important to keep the order of occurence of different events in the model consistent. In our notation, we assume that the control effort $u_t$ is determined after taking into account the state $x_{t-1}$ and measurement $z_{t-1}$. The control effort $u_t$ causes the robot to transition to a new state $x_t$ where a new measurement $z_t$ is taken, which in turns allows the determination of a new control effort $u_{t+1}$. This network model is a stochastic model known as a Markov process because the new state $x_t$ only depends on the previous state $x_{t-1}$ and the previous control $u_t$. In addition, since we cannot directly observe the current state, but instead estimate it through measurements, this model is further classified as a hidden Markov model. 
+It is important to keep the order of occurrence of different events in the model consistent. In our notation, we assume that the control effort $u_t$ is determined after taking into account the state $x_{t-1}$ and measurement $z_{t-1}$. The control effort $u_t$ causes the robot to transition to a new state $x_t$ where a new measurement $z_t$ is taken, which in turns allows the determination of a new control effort $u_{t+1}$. This network model is a stochastic model known as a Markov process because the new state $x_t$ only depends on the previous state $x_{t-1}$ and the previous control $u_t$. In addition, since we cannot directly observe the current state, but instead estimate it through measurements, this model is further classified as a hidden Markov model. 
+
+\begin{figure}[h!]
+	\centering
+    \includegraphics[width=0.6\textwidth]{img/HMV.jpg}
+    \caption{Overall	dynamic	Bayes	
+network	model (Hidden Markov Model)}
+    \label{fig:cond_prob_example}
+\end{figure}
 
 \subsection{Belief distribution}
 We can encode our internal knowledge of the state in a belief distribution, which is a probability distribution that has a value for each possible hypothesis of the true state. Formally, our belief distribution at a particular state is the probability of being at that state given all the measurements and control efforts we've seen so far. 
@@ -362,12 +372,63 @@ $bel(x_t):=\eta p(z_t\mid x_t) \overline{bel}(x_t) $
 After these two steps, a control effort $u_{t+1}$ is taken, we transition to a new state $x_{t+1}$, and the process of prediction and measurement update is repeated. This is what makes the Bayes' filter algorithm a recursive algorithm. 
 
 \subsection{Derivations}
+The second step of the Bayes' Filter Algorithm involves the measurement update of our belief model. Here we will go into further detail regarding the derivation of the measurement update.
+
+We begin with our belief
+\begin{equation*}
+    bel(x_{t}) = p(x_{t}|z_{1:t},u_{1:t})
+\end{equation*}
+We then expand this using Bayes' Rule to get:
+\begin{equation*}
+    bel(x_{t}) =\frac{p(z_{t}|x_{t}z_{1:t-1},u_{1:t})p(x_{t}|z_{1:t-1},u_{1:t})}{p(z_{t}|z_{1:t-1},u_{1:t})} 
+\end{equation*}
+Where the denominator is the normalizor and is equal to $\eta^{-1}$. Next, we use the Markov Property to get:
+\begin{equation*}
+    bel(x_{t}) = \eta p(z_{t}|x_{t})p(x_{t}|z_{1:t-1},u_{1:t})
+\end{equation*}
+Where the right term equates to the prediction distribution $\overline{bel}(x_{t})$.
+Next we derive the Correction Update that we perform on that prediction distribution
+\begin{equation*}
+    \overline{bel}(x_{t}) = p(x_{t}|z_{1:t-1},u_{1:t})
+\end{equation*}
+Using the law of total probability, we expand to get:
+\begin{equation*}
+    \overline{bel}(x_{t}) = \int p(x_{t}|x_{t-1},z_{1:t-1},u_{1:t})p(x_{t-1}|z_{1:t-1},u_{1:t})dx_{t-1}
+\end{equation*}
+Next we use the Markov Property to simplify the left term:
+\begin{equation*}
+    \overline{bel}(x_{t}) = \int p(x_{t}|x_{t-1},u_{t})p(x_{t-1}|z_{1:t-1},u_{1:t})dx_{t-1}
+\end{equation*}
+For general output feedback policies, $u_{t}$ does not provide feedback additional information on $x_{t-1}$ and so:
+\begin{equation*}
+    \overline{bel}(x_{t}) = \int p(x_{t}|x_{t-1},u_{t})p(x_{t-1}|z_{1:t-1},u_{1:t-1})dx_{t-1}
+\end{equation*}
+The right term then simplifies so that we get our result:
+\begin{equation*}
+    \overline{bel}(x_{t}) = \int p(x_{t}|x_{t-1},u_{t})bel(x_{t-1})dx_{t-1}
+\end{equation*}
+\subsection{Discrete Bayes' filter algorithm}
+
+For problems with finite state spaces, a Discrete Bayes' Filter can be implemented. Initially, we represent the belief state, $bel(x_{t})$, as a probability mass function $\{p_{k,t}\}$. The pseudo code for the algorithm is shown below:
+\\
+\\
+\begin{algorithm}[H]
+ \KwData{$\{p_{k,t-1}\}, u_{t},z_{t}$}
+ \KwResult{$\{p_{k,t}\}$}
+ initialization\;
+ \ForEach{k}{
+  $\overline{p}_{k,t}=\Sigma_{i} p(X_{t} = x_{t}|u_{t},X_{t-1}=x_{i})p_{i,t-1} $\;
+  $p_{k,t}=\eta p(z_{t}|X_{t} = x_{k})\overline{p}_{k,t}$\;
+ }
+ \Return $p_{k,t}$
+ \caption{Discrete Bayes' Filter Algorithm}
+\end{algorithm}
 
 \section{Additional Resources}
 
 There are some additional resources to which you can refer. Chapter 2 in \cite{thrun2005probabilistic} provided basic probabilistic concepts that are frequently used in robotics, the formal model of robot interaction, introduction to \textit{Bayes filters} and implementing issues associated with that. 
 
-If you want to dive deeper into \textit{Bayes filters}, \cite{sarkka2013bayesian} is a comprehensive book on Bayesian filtering and smoothing and applications of \textit{Bayes filters} such as \textit{Kalman filters} (including extended and unscented \textit{Kalman filters}), \textit{Gaussian filters} and \textit{Partical filters}. As you know, Bayes recursive filter is not a practical algorithm, which means it cannot be implemented on a computer. Therefore, it is important to understand those implementations using the principle of \textit{Bayes filters}. 
+If you want to dive deeper into \textit{Bayes filters}, \cite{sarkka2013bayesian} is a comprehensive book on Bayesian filtering and smoothing and applications of \textit{Bayes filters} such as \textit{Kalman filters} (including extended and unscented \textit{Kalman filters}), \textit{Gaussian filters} and \textit{Particle filters}. As you know, Bayes recursive filter is not a practical algorithm, which means it cannot be implemented on a computer. Therefore, it is important to understand those implementations using the principle of \textit{Bayes filters}. 
 
 If you are interested in the original paper on \textit{Kalman filters} by R.E.Kalman, you can refer to \cite{kalman1960new}. This famous paper described a recursive solution to discrete filtering problem. With the advance of computer and robotics, this paper inspired a lot of researches and applications. 
 
